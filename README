@@ -1,0 +1,17 @@
+writediff
+=========
+
+writediff writes an image to a file/block device, sped up by skipping blocks that already have the intended value.  It is intended to be a faster form of dd (but see "Limitations" below).
+
+Common use cases
+----------------
+
+* Writing a modified image file to its original disk, or writing a clean image file to a modified disk
+* Poor man's incremental snapshots: make a copy-on-write copy of the parent image, and use writediff to write the new image into the copy.  Because writediff does not write to the unchanged blocks, the copy will only use disk space for the changes.  (Note: some CoW file systems may natively do this already.)
+
+Limitations
+-----------
+
+* I make no guarantees about the functionality of writediff.  However, I regularly use it myself, and have not run into any issues with it.
+* When the source and destination have little data in common, writediff will become slower than dd (because it ends up needing to write nearly every block anyway, but also reads every block to determine that).  Likewise, if the destination cannot read faster than it can write, writediff will be at best no slower than dd.
+* When writing to special devices that do not simply store and retrieve data, writediff will NOT behave as expected (i.e. the same as dd).  This is because it reads from the device (which may trigger side effects) and does not write every block (which may omit side effects and/or cause misalignment).
